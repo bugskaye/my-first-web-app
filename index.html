@@ -3,9 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>My First App</title>
 </head>
 <body>
-    <h1>This is a test2</h1>
+    <h1>Hello World! This is my first web app.</h1>
+
+    <!-- 1. 前端 UI 元件 -->
+    <input type="text" id="sapUser" placeholder="請輸入您的名字...">
+    <button id="myButton">點擊送出</button>
+
+    <h2 id="resultText"></h2>
+
+    <!-- 保留原本的 UI 元件，我們只修改下面的 <script> 區塊 -->
+    <script>
+        const actionButton = document.getElementById('myButton');
+        const displayLabel = document.getElementById('resultText');
+
+        // 當按鈕被點擊時，發動異步請求（Async/Await）去撈後端資料
+        actionButton.addEventListener('click', async function() {
+            try {
+                displayLabel.innerText = "⏳ 正在連線到 WSL 後端 API 抓取資料...";
+                displayLabel.style.color = "blue";
+
+                // 🚀 關鍵：呼叫您剛剛啟動的 Node.js 後端 API 網址
+                const response = await fetch('http://localhost:3000/api/sap-info');
+                
+                // 如果 API 回傳狀態不是 200，代表出錯了
+                if (!response.ok) {
+                    throw new Error('後端伺服器回應異常');
+                }
+
+                // 將抓到的 JSON 字串格式化轉換為 JavaScript 物件
+                const sapData = await response.json();
+
+                // 🎯 商業邏輯呈現：把後端傳過來的 JSON 欄位拆解並渲染到網頁上
+                displayLabel.innerHTML = `
+                    <div style="border: 2px solid green; padding: 15px; border-radius: 5px; background-color: #f9f9f9; margin-top: 15px;">
+                        <h3 style="color: green; margin-top: 0;">✅ 成功從 Node.js 後端取得 SAP 資料！</h3>
+                        <p><strong>系統識別碼 (SID):</strong> <span style="color: blue;">${sapData.systemId}</span></p>
+                        <p><strong>用戶端 (Client):</strong> ${sapData.client}</p>
+                        <p><strong>目前的開發者:</strong> ${sapData.developer}</p>
+                        <p><strong>系統連線狀態:</strong> ${sapData.status}</p>
+                        <p style="font-size: 12px; color: gray;">時間戳記: ${sapData.timestamp}</p>
+                    </div>
+                `;
+            } catch (error) {
+                // 錯誤處理
+                displayLabel.innerText = `❌ 連線失敗：${error.message}。請確認後端 node server.js 是否還在執行中！`;
+                displayLabel.style.color = "red";
+            }
+        });
+    </script>
+
 </body>
 </html>
